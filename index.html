@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Packet Processing Suite</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="title">Network Packet Processing Suite</h1>
+            <p class="subtitle">Modular C++ microservices for network analysis</p>
+            <div class="tech-stack">
+                <a class="tech-badge" href="https://en.cppreference.com/w/" target="_blank" rel="noopener" title="C++ Documentation">C++</a>
+                <a class="tech-badge" href="https://kafka.apache.org/documentation/" target="_blank" rel="noopener" title="Apache Kafka Documentation">Apache Kafka</a>
+                <a class="tech-badge" href="https://github.com/edenhill/librdkafka" target="_blank" rel="noopener" title="librdkafka Documentation">librdkafka</a>
+                <a class="tech-badge" href="https://simdjson.org/docs/" target="_blank" rel="noopener" title="simdjson Documentation">simdjson</a>
+                <a class="tech-badge" href="https://www.tcpdump.org/manpages/pcap.3pcap.html" target="_blank" rel="noopener" title="PCAP Documentation">PCAP</a>
+            </div>
+        </header>
+        <div class="architecture">
+            <h2 class="arch-title">Architecture</h2>
+            <div class="flow">
+                <span class="flow-step">PCAP Files</span>
+                <span class="flow-arrow">&#8594;</span>
+                <span class="flow-step">Hex Converter</span>
+                <span class="flow-arrow">&#8594;</span>
+                <span class="flow-step">Packet Streamer</span>
+                <span class="flow-arrow">&#8594;</span>
+                <span class="flow-step">Kafka Producer</span>
+                <span class="flow-arrow">&#8594;</span>
+                <span class="flow-step">JSON Consumer</span>
+            </div>
+        </div>
+        <div class="project">
+            <div class="project-header-flex">
+                <span class="project-title">pcap-to-hex-converter</span>
+                <a href="https://github.com/psysecboi/pcap-raw2hex/tree/main" class="github-link" target="_blank" rel="noopener">
+                    View on GitHub
+                    <svg class="external-arrow" width="15" height="15" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-left:4px;"><path d="M7 13L13 7M13 7H7M13 7V13" stroke="#6ea0d6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </a>
+            </div>
+            <div class="project-content">
+                <div class="description">
+                    Converts PCAP network capture files to hexadecimal format for analysis and debugging.
+                </div>
+                <div class="code-block">
+void convertPcapToHex(const char* pcapFile) {
+    char errbuf[PCAP_ERRBUF_SIZE];
+    pcap_t* handle = pcap_open_offline(pcapFile, errbuf);
+    const u_char* packet;
+    struct pcap_pkthdr* header;
+    while (pcap_next_ex(handle, &header, &packet) >= 0) {
+        printHexData(packet, header->caplen);
+    }
+    pcap_close(handle);
+}
+                </div>
+            </div>
+        </div>
+        <div class="project">
+            <div class="project-header-flex">
+                <span class="project-title">pcap-data-streamer</span>
+                <a href="https://github.com/psysecboi/pcap-data-streamer" class="github-link" target="_blank" rel="noopener">
+                    View on GitHub
+                    <svg class="external-arrow" width="15" height="15" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-left:4px;"><path d="M7 13L13 7M13 7H7M13 7V13" stroke="#6ea0d6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </a>
+            </div>
+            <div class="project-content">
+                <div class="description">
+                    Streams essential packet data through byte-by-byte parsing of PCAP files.
+                </div>
+                <div class="code-block">
+struct PacketInfo {
+    uint32_t src_ip, dst_ip;
+    uint16_t src_port, dst_port;
+    uint8_t  protocol;
+    uint32_t timestamp;
+};
+void parsePacket(const u_char* data, int len) {
+    const u_char* ip_header = data + 14;
+    PacketInfo info;
+    extractEssentialData(ip_header, &info);
+    streamToOutput(&info);
+}
+                </div>
+            </div>
+        </div>
+        <div class="project">
+            <div class="project-header-flex">
+                <span class="project-title">kafka-simdjson-processor</span>
+                <a href="https://github.com/psysecboi/kafka-simdjson-producer-consumer-model" class="github-link" target="_blank" rel="noopener">
+                    View on GitHub
+                    <svg class="external-arrow" width="15" height="15" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-left:4px;"><path d="M7 13L13 7M13 7H7M13 7V13" stroke="#6ea0d6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </a>
+            </div>
+            <div class="project-content">
+                <div class="description">
+                    Apache Kafka producer-consumer model with simdjson for high-performance JSON parsing.
+                </div>
+                <div class="code-block">
+#include <librdkafka/rdkafka.h>
+#include <simdjson.h>
+void producePacketEvent(const PacketInfo& packet) {
+    simdjson::dom::object json_obj;
+    json_obj["src_ip"] = packet.src_ip;
+    json_obj["dst_ip"] = packet.dst_ip;
+    json_obj["protocol"] = packet.protocol;
+    std::string json_str = json_obj.dump();
+    rd_kafka_produce(rkt, RD_KAFKA_PARTITION_UA,
+                     RD_KAFKA_MSG_F_COPY, 
+                     json_str.c_str(), json_str.length(),
+                     NULL, 0, NULL);
+}
+                </div>
+            </div>
+        </div>
+        <!-- Place notes above the footer -->
+        <footer class="footer-notes">
+            <div class="footer-notes-title">Points to remember</div>
+            <ul class="footer-notes-list">
+                <li>Install all required dependencies for each service before running.</li>
+                <li>The microservices are linked below in their respective blocks.</li>
+                <li>Clone the repositories locally to run the applications.</li>
+            </ul>
+        </footer>
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-links-text">
+                    <a href="https://github.com/psysecboi" class="footer-link" target="_blank" rel="noopener">GitHub</a>
+                    <span class="footer-divider">|</span>
+                    <a href="mailto:payasv695@gmail.com" class="footer-link">Email</a>
+                    <span class="footer-divider">|</span>
+                    <a href="https://linkedin.com/in/payasv" class="footer-link" target="_blank" rel="noopener">LinkedIn</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>Made with <span style="color:#e57373;">&#10084;&#65039;</span> by psysecboi</p>
+            </div>
+        </footer>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
